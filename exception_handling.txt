@@ -1,0 +1,25 @@
+--ALL FOR ONE Exception
+
+DECLARE
+my_ex_state   text;
+my_ex_message text;
+my_ex_detail  text;
+my_ex_hint    text;
+my_ex_ctx     text;
+
+BEGIN
+
+Exception 
+when others then		
+raise notice 'Error';
+GET STACKED DIAGNOSTICS
+my_ex_state   = RETURNED_SQLSTATE,
+my_ex_message = MESSAGE_TEXT,
+my_ex_detail  = PG_EXCEPTION_DETAIL,
+my_ex_hint    = PG_EXCEPTION_HINT,
+my_ex_ctx     = PG_EXCEPTION_CONTEXT
+;
+raise notice '% % % % %', my_ex_state, my_ex_message, my_ex_detail, my_ex_hint, my_ex_ctx;
+
+END
+
