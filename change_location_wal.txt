@@ -1,0 +1,16 @@
+1) Make sure your postgres is not running!
+
+2) mount your WAL disk to an easy accessible folder
+
+3) check the permissions of your WAL directory ($PG_DATA/pg_xlog/)
+
+4) copy or move all files from $PG_DATA/pg_xlog/ into this directory
+
+5) unmount the WAL disk and remount it to $PG_DATA/pg_xlog/
+
+6) Check the permissions and fix if necessary (of the directory and files inside)
+Start postgres again
+
+-----------------OR-------------------
+
+change it at the time of --initdb command by use of flags
