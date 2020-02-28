@@ -1,0 +1,6 @@
+--DROP ALL SEQUENCES FROM DATABASE 
+
+copy (SELECT 'drop sequence ' || a.nspname ||'.' || c.relname || ';' FROM pg_class c  
+ inner join pg_namespace a ON a.oid = c.relnamespace
+  and c.relkind = 'S'
+	 ) to '/home/ALL_PGSQL_SCRIPT_OUTPUT/dropping_sequences.txt'
