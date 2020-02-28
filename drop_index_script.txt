@@ -1,0 +1,25 @@
+--DROP FULL DATABASE INDEX except pg_catalog and INformation_schema 
+
+copy (SELECT format('DROP INDEX %I.%I;', n.nspname, c_ind.relname)
+  FROM pg_index ind
+  JOIN pg_class c_ind ON c_ind.oid = ind.indexrelid
+  JOIN pg_namespace n ON n.oid = c_ind.relnamespace
+  LEFT JOIN pg_constraint cons ON cons.conindid = ind.indexrelid
+  WHERE
+    n.nspname NOT IN ('pg_catalog','information_schema') AND 
+    n.nspname !~ '^pg_toast'::TEXT AND
+    cons.oid IS NULL) to '/home/ALL_PGSQL_SCRIPT_OUTPUT/drop_index.txt'
+
+--DROP ALL INDEX IN SPECIFIC SCHEMA
+
+copy (select 'DROP INDEX ' || tnsp.nspname || '.' || idx.relname as index_name 
+   --    insp.nspname as index_schema,
+     --  tbl.relname as table_name,
+      -- tnsp.nspname as table_schema
+from pg_index pgi
+  join pg_class idx on idx.oid = pgi.indexrelid
+  join pg_namespace insp on insp.oid = idx.relnamespace
+  join pg_class tbl on tbl.oid = pgi.indrelid
+  join pg_namespace tnsp on tnsp.oid = tbl.relnamespace
+where pgi.indisunique --<< only unique indexes
+  and tnsp.nspname = 'ncsslive') to '/home/ALL_PGSQL_SCRIPT_OUTPUT/drop_schemawise_index.txt'
