@@ -1,0 +1,121 @@
+--repmgr installation and configuration step by step
+
+--suppose you have two servers
+--having IP
+
+10.70.100.2
+10.70.100.3
+
+--and postgres is running on both servers
+--if not then install it first
+
+--install repmgr.rpm
+--then with the postgres account, create database and user for repmgr
+--if you have another user then login with it
+
+@sudo -i -u postgres/user
+@createuser --replication --createdb --createrole --superuser repmgr
+@psql -c 'ALTER USER repmgr SET search_path TO repmgr_test, "$user", public;'
+@createdb repmgr --owner=repmgr
+
+--now configure passwardless ssh access between two servers
+--make sure that the ssh key you are creating for user must be login.
+--e.g
+@sudo -i -u user
+
+@ssh-keygen -t rsa
+
+--after generating key you have to copy that key
+--on the another server and specified user
+--first create directory(.ssh) which contain the key
+
+@ssh user@10.70.100.3 mkdir -p .ssh
+
+--then simply copy the key 
+
+@cat .ssh/id_rsa.pub | ssh user@10.70.100.3 'cat >> .ssh/authorized_keys'
+
+--set the permissions to that directory and file
+
+@ssh user@10.70.100.3 "chmod 700 .ssh; chmod 640 .ssh/authorized_keys"
+
+--now try to connect ssh
+--if ssh is not configure correctly then 
+--run this command on both servers and 
+--try again
+@restorecon .ssh
+
+--Update your postgres.conf and pg_hba.conf file
+ 
+#postgres.conf
+wal_keep_segments = 5000
+hot_standby = on
+archive_mode = on
+# Update your ips according to your cluster hosts
+listen_addresses = 'localhost,10.70.100.2,10.70.100.3'
+max_wal_senders = 18
+wal_level = hot_standby
+hot_standby = on
+shared_preload_libraries = 'repmgr'
+
+#pg_hba.conf
+host    repmgr repmgr 10.70.100.2/32 trust
+host    replication repmgr 10.70.100.3/32 trust
+host    repmgr repmgr 10.70.100.2/32 trust
+host    replication repmgr 10.100.70.3/32 trust
+
+--restart postgres service
+--and test the connection between two servers
+
+@psql 'host=server1 dbname=repmgr user=repmgr'
+@psql 'host=server2 dbname=repmgr user=repmgr'
+
+--now its time to register our nodes
+--first create "repmgr.conf" file under /etc
+
+@nano /etc/repmgr.conf
+
+--edit the configuration with server1,node1 and server2,node2 respectively
+--10.70.100.2
+#repmgr.conf
+cluster=cluster
+node=1
+node_name=server1
+conninfo='host=server1 user=repmgr dbname=repmgr connect_timeout=2'
+failover=automatic
+promote_command='repmgr standby promote -f /etc/repmgr.conf --log-to-file'
+follow_command='repmgr standby follow -f /etc/repmgr.conf --log-to-file'
+logfile='/var/log/postgresql/repmgr.log'
+loglevel=NOTICE
+reconnect_attempts=4
+reconnect_interval=5
+
+--now register srever1 as primary
+
+@repmgr primary register
+
+--check the info of cluster
+
+@repmgr cluster show
+
+--then on server2
+--remove the directory of postgres
+
+@sudo -i -u repmgr
+@rm -rf /var/lib/pgsql/11/data
+
+--then run the command for cloning
+
+@repmgr -h server1 -U repmgr -d repmgr standby clone
+@exit
+
+--start postgres service on server2
+--and register server2 as standby
+
+@systemctl start postgresql-11
+@sudo -i -u repmgr
+@repmgr standby register 
+
+--then check you have successfully installed and configured
+
+@repmgr cluster show 
