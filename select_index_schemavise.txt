@@ -1,0 +1,13 @@
+--select schemawise index records in database 
+
+select idx.relname as index_name, 
+       insp.nspname as index_schema,
+       tbl.relname as table_name,
+       tnsp.nspname as table_schema
+from pg_index pgi
+  join pg_class idx on idx.oid = pgi.indexrelid
+  join pg_namespace insp on insp.oid = idx.relnamespace
+  join pg_class tbl on tbl.oid = pgi.indrelid
+  join pg_namespace tnsp on tnsp.oid = tbl.relnamespace
+where pgi.indisunique --<< only unique indexes
+  and tnsp.nspname = 'ncsslive'
