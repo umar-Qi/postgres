@@ -1,0 +1,24 @@
+--For New Database
+
+1) Export DDL if needed with partition tables.
+
+2) Export primary_keys, unique_keys, constraints
+
+3) Export Indexes
+	(Before exporting indexes must edit file 'set create unique index "if not exist"')
+
+4) Export Sequences
+
+5) Export Data
+	(Before exporting data must disable triggers if exist)
+
+6) Export Foreign_keys
+
+--If you already have database and you want to proceed it with starting 
+--point then you must follow "Drop_*_sript.txt"
+--Where these script create a file with all drop command of
+--Constraint
+--Sequences
+--Indexes
+--and Foreign_keys
+	(Before proceeding must disable triggers if exist)
