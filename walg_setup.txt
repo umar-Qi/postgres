@@ -1,0 +1,237 @@
+--step to install Wal-g via source--
+
+--requirements--
+--go
+--git
+--and its tools that is
+--lint
+--dep
+
+--if you dont have above requirement
+--install it first
+
+--go can be install via rpm or source
+
+		---------by rpm----------
+
+--download go-toolset-7.rpm from
+http://mirror.centos.org/centos/7/sclo/x86_64/rh/go-toolset-7/
+--it has more than 10 dependencies and sub-dependencies
+
+--make sure you have root access
+--install these by command
+
+root@rpm -ivh go-toolset-7.rpm
+
+--all files install it under /opt/rh/go-toolset-7
+--run the command on root
+
+root@scl_source enable go-toolset-7 bash
+
+--permanantly add below command in .bashrc
+
+root@source scl_source enable go-toolset-7
+--test wether it is install perfectly or not
+root@go --help
+
+--if command instruction appear on screen
+--it means its done
+
+		----------by source--------------- 
+
+#it will take sometime but give you a tough challenge
+--download go1.4-bootstrap-20171003 and go-release-branch.go1.14 from
+https://github.com/zchee/go1.4-bootstrap/tree/go1.4-bootstrap-20171003
+https://github.com/golang/go/tree/release-branch.go1.14
+
+--and place it under /home/user/goroot
+--user must be the owner of goroot directory
+--must have the execute access on both packages
+--files in both packages must be executable
+--e.g -rwxr-x--x
+--if not then run
+
+--in goroot
+
+user@chmod +x go1.4-bootstrap-20171003/go/src/*
+user@chmod +x go-release-branch.go1.14/go-release-branch.go1.14/src/*
+
+
+user@cd go1.4-bootstrap-20171003/go/src/
+user@CGO_ENABLED=0
+user@./make.bash
+
+--set the GOROOT_BOOTSTRAP in ~/.bashrc
+
+user@nano ~/.bashrc
+
+export GOROOT_BOOTSTRAP=/home/user/goroot/go1.4-bootstrap-20171003/go
+
+--now change the directory
+
+user@cd go-release-branch.go1.14/go-release-branch.go1.14/src/
+user@./all.bash
+
+--set the PATH in ~/.bashrc
+
+user@nano ~/.bashrc
+
+export PATH=$PATH:/home/user/goroot/go-release-branch.go1.14/go-release-branch.go1.14/bin
+
+--run go command
+
+user@go
+--or
+user@go --help
+
+--if command instructions appear on screen
+--it mean its done
+
+--now you have successfully install go
+
+		-----------wal-g by source--------------
+--download wal-g from 
+https://github.com/wal-g/wal-g/tree/v0.2.14
+ 
+--place it under goroot directory
+
+user@mv wal-g goroot
+user@cd wal-g/wal-g/
+
+user@echo GOPATH=/home/user/goroot
+
+--set this path permanently in ~/.bashrc
+
+user@nano ~/.bashrc
+
+export GOPATH=/home/user/goroot
+
+--run this command under wal-g/
+
+user@make install
+
+--above command install #dep, #golint, and #tools
+--these packages directly downloaded from web
+--make sure system has internet access on both sites
+https://go.googlesource.com
+https://github.com
+--it will place all files under GOPATH/src
+
+--check if your command has successfully run
+
+user@dep
+
+--it shows dep [command]
+--now initialize git
+
+@git submodule update --init  or  git init
+
+--run above command in these directories
+
+user@cd goroot/src/github.com/golang/dep
+user@cd goroot/src/golang.org/x/lint
+user@cd goroot/src/golang.org/x/tools
+
+--now move wal-g into the GOPATH/src
+--if you dont move it, an Error will occure during #make deps
+
+user@mv goroot/wal-g goroot/src
+
+--and run this command under wal-g/
+
+user@make deps
+
+--it will take a time, maybe throw an Error of somefiles
+--e.g lzo.h and decode.h, no such file or directory
+--so we have to download and install it manualy from
+https://github.com/google/brotli/tree/v1.0.7 and
+http://www.oberhumer.com/opensource/lzo/
+
+--installation of "lzo"
+user@cd lzo/lzo/
+user@chmod +x *
+user@./configure
+user@make
+user@sudo make install
+
+--installation of "brotli"
+user@cd brotli/brotli/
+user@chmod +x *
+user@mkdir out
+user@cd out
+user@../configure-cmake
+user@make
+user@make test
+user@sudo make install
+
+--lets move on where we left last time
+
+user@cd goroot/src/wal-g/wal-g/
+user@make deps
+
+--now before enter last command
+--we have to set last PATH
+
+user@export GOBIN=pg_path
+
+--where pg_path is your postgres root directory
+--where postgres is initialize all commands
+--in my case "pg_path=/var/lib/pgsql"
+
+--finaly run last command
+
+user@make pg_install
+
+--check wether it is install successfully or not
+--leave the directory wal-g
+
+user@wal-g
+
+--if it shows help [command] then its done
+
+-------------******************END OF INSTALLATION*****************--------------------
+
+--After successfully install wal-g lets take a first backup
+--before it set some path and commands in postgres.conf and ~/.bashrc
+
+--open postgres.conf and adit some lines
+
+full_page_writes = on
+wal_compression = on
+wal_log_hints = on 
+
+archive_mode = on
+archive_command = 'wal-g wal-push %p'
+restore_command = 'wal-g wal-fetch %f %p'
+
+--restart the postgres services
+--open ~/.bashrc and export some flags
+user@nano ~/.bashrc
+
+alias wal-g='/var/lib/pgsql/bin/wal-g'
+
+export WALG_LOG_LEVEL=DEVEL			#display forground logs during process
+export WALG_DELTA_MAX_STEPS=4			#take 4 incremental backups after full backup
+export WALG_FILE_PREFIX=/home/postgres/wal-g	#define directory of storing backups
+export WALG_COMPRESSION_METHOD=brotli
+export WALG_USE_WAL_DELTA=false
+export WALG_PREVENT_WAL_OVERWRITE=1
+export TOTAL_BG_UPLOADED_LIMIT=1024
+export PGHOST=10.70.100.8
+export PGUSER=postgres
+export PGDATABASE=postgres
+export PGPORT=5432
+export PGPASSWORD=123
+export PGDATA=/var/lib/pgsql/data
+
+--taking full backup
+user@wal-g backup-push /var/lib/pgsql/data FULL
+
+--it will store all files under WALG_FILE_PREFIX
+
+--restore backup
+--directory must be empty or it will through an error
+
+user@wal-g backup-fetch /var/lib/pgsql/data LATEST
+
+---------------********************END OF DOCUMENTATION***************---------------------
