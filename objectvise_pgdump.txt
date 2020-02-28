@@ -1,0 +1,11 @@
+pg_dump -U username -Fc -s -f dump_file your_database
+--where -s = only_schema
+	-f = output_file
+
+pg_restore -l dump_file | grep FUNCTION > option_file
+--this command will grep objects in the dump file.
+where -l = listening
+and FUNCTION is an entity of object which present in the dump_file.
+
+pg_restore -U username -d your_other_database -L option_file dump_file
+--finaly this command will restore the selected objects in -L file from dump file.
