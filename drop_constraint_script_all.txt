@@ -1,0 +1,22 @@
+--DROP ALL CONSTRAINTS FROM DATABASE 
+
+copy (SELECT 'ALTER TABLE '||nspname||'."'||relname||'" DROP CONSTRAINT "'||conname||'";'
+FROM pg_constraint
+INNER JOIN pg_class ON conrelid=pg_class.oid
+INNER JOIN pg_namespace ON pg_namespace.oid=pg_class.relnamespace
+ORDER BY CASE WHEN contype='f' THEN 0 ELSE 1 END,contype,nspname,relname,conname) 
+to '/home/ALL_PGSQL_SCRIPT_OUTPUT/droppingConstraints.sql';
+
+
+--FOR SCHEMA VISE
+copy (select 'ALTER TABLE ' || tnsp.nspname || '."' || cnt.relname ||'" DROP CONSTRAINT "'|| conname||'";' 
+   --    insp.nspname as index_schema,
+     --  tbl.relname as table_name,
+      -- tnsp.nspname as table_schema
+from pg_constraint pgi
+  join pg_class cnt on cnt.oid = pgi.indexrelid
+  join pg_namespace insp on insp.oid = cnt.relnamespace
+  join pg_class tbl on tbl.oid = pgi.indrelid
+  join pg_namespace tnsp on tnsp.oid = tbl.relnamespace
+where pgi.indisunique --<< only unique indexes
+  and tnsp.nspname = 'ncsslive') to '/home/ALL_PGSQL_SCRIPT_OUTPUT/drop_schemawise_constraint.txt'
