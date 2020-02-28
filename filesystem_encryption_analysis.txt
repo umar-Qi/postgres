@@ -1,0 +1,21 @@
+	
+		PERFORMANCE			                  CryFS	    gocrypt	  EncFS	   eCryptfs	  Veracrypt	
+						
+1)Works together with Dropbox				    Y	        Y	        Y	          N	      *
+2)Small changes cause only small			  Y	        Y	        Y	          Y	      N
+  amount of data to be re-uploaded	
+3)No known security flaws				        Y	        Y	        N	          Y	      Y
+4)Encrypts file contents				        Y	        Y	        Y	          Y	      Y
+5)Encrypts file metadata and file sizes	Y	        N	        N	          N	      Y
+6)Encrypts directory structure				  Y	        N	        N	          N	      Y
+7)Protects file contents from malicious Y	        *	        *	          N     	N
+  modifications		
+8)Protects file metadata and file sizes	Y	        N	        N	          N	      N 
+  from malicious modifications	
+9)Protects directory structure from 		Y	        N	        N	          N	      N
+  malicious modifications	
+10)Available for Linux					        Y	        Y	        Y	          Y     	Y
+11)Available for Mac OS X				        Y	        Y	        Y	          N	      Y
+12)Available for Windows				        *	        *	        *	          N	      Y
+
+Conclusion: So CryFS is the only choice because its easy to use and performance lavel is A,unlike other filesystems.
