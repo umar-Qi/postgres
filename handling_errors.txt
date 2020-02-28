@@ -1,0 +1,49 @@
+--Error code and Handling
+Exception 
+WHEN --handling-- THEN
+
+
+P0001>	RAISE_EXCEPTION		
+
+P00000>	PLPGSQL_ERROR		--handle all kind of error
+
+P0002>	NO_DATA_FOUND 		--handle null/empty exception
+
+--for constraints 
+
+23502>	NOT_NULL_VIOLATION 	--handle not null const
+
+23503>	FOREIGN_KEY_VIOLATION 	--handle foreign_key
+
+23505>	UNIQUE_VIOLATION 	--handle unique_const
+
+23514>	CHECK_VIOLATION 	--handle check_const
+
+23000>	INTEGRITY_CONSTRAINT_VIOLATION	--handle all kind of const.
+
+--for insuffecient resources
+
+53200>	OUT_OF_MEMORY 		--handle memory consumption
+
+53100>	DISK_FULL 		--handle no space in disk
+
+53300>	TOO_MANY_CONNECTIONS	--handle resource limit
+
+53000>	INSUFFECIENT_RESOURCES	--handle all kind of resource exception
+
+--for access memory
+
+54011>	TOO_MANY_COLUMNS 	--handle limit over exceed
+
+54000>	PROGRAME_LIMIT_EXCEEDED	--handle all kind of loe.
+
+54023>	TOO_MANY_ARGUMENTS	--handle large no. of argument excep.
+
+--for internal errors
+
+XX000>	INTERNAL_ERROR		--handle all kind of config.
+
+XX001>	DATA_CORRUPTED		--handle data corrup.
+
+XX002>	INDEX_CORRUPTED		--handle index corrup.
+ 
