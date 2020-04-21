@@ -1,0 +1,63 @@
+1:SWITCHOVER:
+
+
+on standby:
+
+RUN 'repmgr standby switchover' ON STANDBY.
+
+
+2: Failover
+
+case 1: primary fails
+
+on standby:
+
+run 'repmgr standby promote'
+
+
+problem:
+
+Now the primary is up and both are running as primary.
+we have to switch former primary to standby
+so for this 
+
+stop postgresql-11
+run ' repmgr node rejoin -d 'host=10.65.200.21 user=repmgr dbname=repmgr' --force-rewind'
+
+if the timelines does'nt match, run the above command again to make the database consistent
+
+
+case 2: Standby fails
+
+
+If the database is in old state and the faulty standby becomes live, the primary will automatically
+replicate the missing archives in the standby.
+
+
+case 3:
+
+->table deleted from primary
+->changes replicated to DR
+->stop primary
+->Restore using PITR on primary
+->start primary node
+-> we will see both are acting as a standby
+->execute  psql -c 'select pg_wal_replay_resume()' on primary server to complete its recovery state.
+->rejoin standby node again
+
+
+
+case 4:
+
+if a database file is deleted from one server, it wont be replicated on DR server so 
+
+->stop postresql on main server
+->copy the required file from DR with proper permissions and place it in main server directory 
+so the database will read it correctly.   
+---------------------------------------------------------------------------------------------------------
+
+
+restorecon -r -vv .ssh is used for passwordless ssh issue
+
+
+
