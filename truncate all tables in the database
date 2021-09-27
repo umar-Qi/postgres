@@ -1,0 +1,15 @@
+# first you need to connect to the relevant database which you want to truncate its table
+
+CREATE OR REPLACE FUNCTION truncate_tables(username IN VARCHAR)
+RETURNS void AS $$
+DECLARE
+statements CURSOR FOR
+SELECT tablename FROM pg_tables
+WHERE tableowner = username AND schemaname = &#39;public&#39;;
+BEGIN
+FOR stmt IN statements LOOP
+EXECUTE &#39;TRUNCATE TABLE &#39; ||
+quote_ident(stmt.tablename) || &#39; CASCADE;&#39;;
+END LOOP;
+END;
+$$ LANGUAGE plpgsql;
