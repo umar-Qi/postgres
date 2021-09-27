@@ -1,0 +1,27 @@
+# On Live Server
+
+# change the following entries in postgresql.conf
+wal_level = logical
+log_collector = on
+log_destination = log
+log_directory = /var/lib/postgresql
+
+# add these two entries in pg_hba.conf
+host all all all trust
+host all all dr_server_ip
+
+# login to database 
+
+CREATE ROLE abc WITH REPLICATION LOGIN PASSWORD 'xyz';
+○ GRANT ALL PRIVILEGES ON DATABASE xyz TO abc;
+○ GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO
+abc;
+○ CREATE PUBLICATION x;
+○ ALTER PUBLICATION x ADD TABLE
+a,b,c,d,e,,,,,n;                        # list the objects(tables/views) with ',' seperated which would be replicated to another server
+
+# On DR Server
+
+CREATE SUBSCRIPTION y CONNECTION
+'host=live_server_ip port=5432 password=xyz user=abc
+dbname=xyz' PUBLICATION x;
